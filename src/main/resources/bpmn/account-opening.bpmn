@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+                  xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+                  xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
+                  id="Definitions_1"
+                  targetNamespace="http://bpmn.io/schema/bpmn">
+  <bpmn:process id="account_opening_process" name="Account Opening Process" isExecutable="true">
+    <bpmn:startEvent id="StartEvent_1" name="Start" />
+    <!-- Additional BPMN elements go here -->
+    <bpmn:endEvent id="EndEvent_1" name="End" />
+  </bpmn:process>
+</bpmn:definitions>
