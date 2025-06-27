@@ -1,12 +1,74 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+<bpmn:definitions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                  xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
                   xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
                   xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
+                  xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
+                  xmlns:camunda="http://camunda.org/schema/1.0/bpmn"
                   id="Definitions_1"
-                  targetNamespace="http://bpmn.io/schema/bpmn">
+                  targetNamespace="http://camunda.io/schema/bpmn"
+                  exporter="Camunda Modeler"
+                  exporterVersion="5.18.0">
   <bpmn:process id="account_opening_process" name="Account Opening Process" isExecutable="true">
-    <bpmn:startEvent id="StartEvent_1" name="Start" />
-    <!-- Additional BPMN elements go here -->
-    <bpmn:endEvent id="EndEvent_1" name="End" />
+    <bpmn:startEvent id="StartEvent_1" name="Start">
+      <bpmn:outgoing>Flow_1</bpmn:outgoing>
+    </bpmn:startEvent>
+
+    <bpmn:serviceTask id="Task_ValidateData" name="Validate Data" camunda:type="external" camunda:topic="validate-data">
+      <bpmn:incoming>Flow_1</bpmn:incoming>
+      <bpmn:outgoing>Flow_2</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:serviceTask id="Task_PerformKYC" name="Perform KYC" camunda:type="external" camunda:topic="perform-kyc">
+      <bpmn:incoming>Flow_2</bpmn:incoming>
+      <bpmn:outgoing>Flow_3</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:exclusiveGateway id="Gateway_KYC_OK" name="KYC OK?">
+      <bpmn:incoming>Flow_3</bpmn:incoming>
+      <bpmn:outgoing>Flow_4</bpmn:outgoing>
+      <bpmn:outgoing>Flow_5</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+
+    <bpmn:userTask id="Task_ManualReview" name="Manual Review">
+      <bpmn:incoming>Flow_5</bpmn:incoming>
+      <bpmn:outgoing>Flow_6</bpmn:outgoing>
+    </bpmn:userTask>
+
+    <bpmn:exclusiveGateway id="Gateway_Approval" name="Approved?">
+      <bpmn:incoming>Flow_6</bpmn:incoming>
+      <bpmn:outgoing>Flow_7</bpmn:outgoing>
+      <bpmn:outgoing>Flow_Reject</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+
+    <bpmn:serviceTask id="Task_CreateAccount" name="Create Account" camunda:type="external" camunda:topic="create-account">
+      <bpmn:incoming>Flow_4</bpmn:incoming>
+      <bpmn:incoming>Flow_7</bpmn:incoming>
+      <bpmn:outgoing>Flow_8</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:serviceTask id="Task_NotifyCustomer" name="Notify Customer" camunda:type="external" camunda:topic="notify-customer">
+      <bpmn:incoming>Flow_8</bpmn:incoming>
+      <bpmn:outgoing>Flow_9</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:endEvent id="EndEvent_1" name="End">
+      <bpmn:incoming>Flow_9</bpmn:incoming>
+    </bpmn:endEvent>
+
+    <bpmn:endEvent id="EndEvent_Reject" name="Rejected">
+      <bpmn:incoming>Flow_Reject</bpmn:incoming>
+    </bpmn:endEvent>
+
+    <bpmn:sequenceFlow id="Flow_1" sourceRef="StartEvent_1" targetRef="Task_ValidateData"/>
+    <bpmn:sequenceFlow id="Flow_2" sourceRef="Task_ValidateData" targetRef="Task_PerformKYC"/>
+    <bpmn:sequenceFlow id="Flow_3" sourceRef="Task_PerformKYC" targetRef="Gateway_KYC_OK"/>
+    <bpmn:sequenceFlow id="Flow_4" sourceRef="Gateway_KYC_OK" targetRef="Task_CreateAccount"/>
+    <bpmn:sequenceFlow id="Flow_5" sourceRef="Gateway_KYC_OK" targetRef="Task_ManualReview"/>
+    <bpmn:sequenceFlow id="Flow_6" sourceRef="Task_ManualReview" targetRef="Gateway_Approval"/>
+    <bpmn:sequenceFlow id="Flow_7" sourceRef="Gateway_Approval" targetRef="Task_CreateAccount"/>
+    <bpmn:sequenceFlow id="Flow_Reject" sourceRef="Gateway_Approval" targetRef="EndEvent_Reject"/>
+    <bpmn:sequenceFlow id="Flow_8" sourceRef="Task_CreateAccount" targetRef="Task_NotifyCustomer"/>
+    <bpmn:sequenceFlow id="Flow_9" sourceRef="Task_NotifyCustomer" targetRef="EndEvent_1"/>
   </bpmn:process>
 </bpmn:definitions>
